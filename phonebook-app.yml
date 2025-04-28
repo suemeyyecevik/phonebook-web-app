@@ -9,6 +9,7 @@ Description: |
   Launch Template in order to spin up instances needed. LT Launch Template is configured to prepare Python Flask 
   environment on EC2, and to deploy Phonebook Application on Flask Server after downloading the app code 
   from Github repository.
+
 Parameters:
   Subnets:
     Description: Choose your subnets
@@ -70,8 +71,6 @@ Resources:
       Subnets: !Ref Subnets
       Type: application
     
-
-  
   LaunchTemplate:
     Type: AWS::EC2::LaunchTemplate
     Properties:
@@ -163,35 +162,33 @@ Resources:
     DeletionPolicy: Delete
     
   rDSSecGroup:
-    Type: AWS::RDS::DBSecurityGroup
-    Properties:
-      DBSecurityGroupIngress: # Required
-        - EC2SecurityGroupId: !GetAtt WebServerSecurityGroup.GroupId
-      GroupDescription: Allow 3306 from WebServerSecurityGroup # Required
-      Tags: 
-        - Key: Name
-          Value: sumeyye-phonebook-RDS-SecGrp
+      Type: AWS::RDS::DBSecurityGroup
+      Properties:
+        DBSecurityGroupIngress: # Required
+          - EC2SecurityGroupId: !GetAtt WebServerSecurityGroup.GroupId
+        GroupDescription: Allow 3306 from WebServerSecurityGroup # Required
+        Tags: 
+          - Key: Name
+            Value: sumeyye-phonebook-RDS-SecGrp
 
-    
-
-    
-    WebServerSecurityGroup:
+     
+  WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow ssh from anywhere and http from ALB # Required
+      GroupName: sumeyye-phonebook-EC2-SecGrp
       SecurityGroupIngress:
-         - IpProtocol: tcp
-           FromPort: 22
-           ToPort: 22
-           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref ALBSecurityGroup # !GetAtt ALBSecurityGroup.GroupId
+      VpcId: !Ref myVPC
 
-         - IpProtocol: tcp
-           FromPort: 80
-           ToPort: 80
-           SourceSecurityGroupId: !Ref ALBSecurityGroup #!GetAtt ALBSecurityGroup.GroupId
-        VpcId: !Ref myVPC
-
-    ALBSecurityGroup:
+  ALBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enable HTTP for Application Load Balancer
@@ -201,14 +198,11 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0 
-         VpcId: !Ref myVPC
-
-  applicationLoadBalancerSecurityGroup:
+      VpcId: !Ref myVPC
     
 Outputs:
-  Outputs:
   WebsiteURL:
-    Value: !Sub 
-      - http://${ALBAddress}
-      - ALBAddress: !GetAtt ALB.DNSName
-    Description: Phonebook Application Load Balancer URL
+      Value: !Sub 
+        - http://${ALBAddress}
+        - ALBAddress: !GetAtt ALB.DNSName
+      Description: Phonebook Application Load Balancer URL
