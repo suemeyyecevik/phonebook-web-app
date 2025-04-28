@@ -44,7 +44,7 @@ Resources:
       HealthCheckType: ELB 
       LaunchTemplate:
         LaunchTemplateId: !Ref LaunchTemplate 
-        Version: !GetAtt LauchTemplate.LatestVersionNumber 
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber 
       MaxSize: 3 
       MinSize: 1  
       TargetGroupARNs:
